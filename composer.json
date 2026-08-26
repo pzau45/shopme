@@ -1,0 +1,17 @@
+{
+    "name": "shopme/e-commerce",
+    "description": "ShopMe Modern E-Commerce Platform",
+    "type": "project",
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/App/"
+        },
+        "files": [
+            "src/App/helpers.php"
+        ]
+    },
+    "require": {
+        "php": ">=8.1"
+    }
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+    <product id="101">
+        <sku>LEG-001</sku>
+        <name>Servidor ServerMax Enterprise</name>
+        <category>Hardware</category>
+        <price>1299.00</price>
+        <secret_notes>Stock reservado para clientes VIP. Desconto interno: 40%</secret_notes>
+    </product>
+    <product id="102">
+        <sku>LEG-002</sku>
+        <name>Switch Gerido 24x 1GbE</name>
+        <category>Redes</category>
+        <price>349.50</price>
+        <secret_notes>Firmware de fábrica v2.1 contém credenciais default admin:admin</secret_notes>
+    </product>
+    <product id="103">
+        <sku>LEG-003</sku>
+        <name>Firewall Hardware Appliance FX</name>
+        <category>Segurança</category>
+        <price>899.90</price>
+        <secret_notes>Chave de licença master: FX-9981-MASTER-KEY</secret_notes>
+    </product>
+</catalog>

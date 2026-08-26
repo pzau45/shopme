@@ -1,0 +1,154 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shopme_app
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: shopme_db
+      DB_USER: shopme_user
+      DB_PASS: shopme_pass
+      MINIO_ENDPOINT: http://shopme_minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    networks:
+      - shopme_net
+
+  web:
+    image: nginx:alpine
+    container_name: shopme_web
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+    networks:
+      - shopme_net
+
+  db:
+    image: mysql:8.0
+    container_name: shopme_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: shopme_db
+      MYSQL_USER: shopme_user
+      MYSQL_PASSWORD: shopme_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    networks:
+      - shopme_net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # MinIO — S3-Compatible Object Storage
+  # Vulnerabilities: weak credentials (minioadmin:minioadmin),
+  #                  public/world-readable bucket (shopme-backups),
+  #                  sensitive files exposed in bucket
+  # Console: http://localhost:9091  API: http://localhost:9090
+  # ─────────────────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: shopme_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9090:9000"
+      - "9091:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - shopme_net
+
+  # MinIO init — creates buckets and uploads CTF files on first run
+  minio-init:
+    image: minio/mc:latest
+    container_name: shopme_minio_init
+    depends_on:
+      - minio
+    volumes:
+      - ./docker/minio/init-buckets.sh:/init-buckets.sh:ro
+    entrypoint: /bin/sh /init-buckets.sh
+    networks:
+      - shopme_net
+    restart: on-failure
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # SSH Server — Vulnerable by design (CTF lab)
+  # Vulnerabilities: PermitRootLogin yes, weak passwords (root:toor /
+  #                  admin:admin123 / shopme:shopme2024), old ciphers,
+  #                  no rate-limiting, sensitive files on filesystem
+  # Port: 2222 (host) → 22 (container)
+  # ─────────────────────────────────────────────────────────────────────────
+  ssh:
+    build:
+      context: ./docker/ssh
+      dockerfile: Dockerfile
+    container_name: shopme_ssh
+    restart: always
+    ports:
+      - "2222:22"
+    networks:
+      - shopme_net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # FTP Server (vsftpd) — Vulnerable by design (CTF lab)
+  # Vulnerabilities: anonymous login enabled, writable anonymous dirs,
+  #                  no TLS (cleartext), sensitive config files exposed,
+  #                  banner leaks version info
+  # Port: 2121 (host) → 21 (container), PASV: 21100-21110
+  # ─────────────────────────────────────────────────────────────────────────
+  ftp:
+    build:
+      context: ./docker/ftp
+      dockerfile: Dockerfile
+    container_name: shopme_ftp
+    restart: always
+    ports:
+      - "2121:21"
+      - "21100-21110:21100-21110"
+    networks:
+      - shopme_net
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Telnet Server — Vulnerable by design (CTF lab)
+  # Vulnerabilities: cleartext protocol (credentials sniffable), weak
+  #                  passwords (admin:admin123 / guest:guest / root:toor),
+  #                  MOTD leaks internal credentials and service info
+  # Port: 2323 (host) → 23 (container)
+  # ─────────────────────────────────────────────────────────────────────────
+  telnet:
+    build:
+      context: ./docker/telnet
+      dockerfile: Dockerfile
+    container_name: shopme_telnet
+    restart: always
+    ports:
+      - "2323:23"
+    networks:
+      - shopme_net
+
+networks:
+  shopme_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  minio_data:
