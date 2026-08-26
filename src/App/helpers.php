@@ -15,4 +15,12 @@ namespace {
             \App\Controllers\require_read_view($viewPath, $data);
         }
     }
+
+    if (!function_exists('base_url')) {
+        function base_url(string $path = ''): string {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            return $scheme . '://' . $host . '/' . ltrim($path, '/');
+        }
+    }
 }

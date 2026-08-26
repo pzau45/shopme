@@ -113,10 +113,14 @@ class AdminController {
     }
 
     public function logs(): void {
-        $db = Database::getPDO();
-        $stmt = $db->query("SELECT * FROM system_logs ORDER BY id DESC LIMIT 50");
-        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+        $logs = \App\Services\LoggerService::getRecentLogs(50);
         require_read_view('views/admin/logs.php', ['logs' => $logs]);
+    }
+
+    public function apiLogs(): void {
+        header('Content-Type: application/json');
+        $logs = \App\Services\LoggerService::getRecentLogs(50);
+        echo json_encode($logs);
+        exit;
     }
 }

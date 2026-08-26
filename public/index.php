@@ -51,6 +51,7 @@ $router->get('/register', [AuthController::class, 'showRegister']);
 $router->post('/register', [AuthController::class, 'register']);
 $router->get('/reset-password', [AuthController::class, 'showResetPassword']);
 $router->post('/reset-password', [AuthController::class, 'requestResetPassword']);
+$router->post('/api/session/reset_password', [AuthController::class, 'apiResetPassword']);
 $router->get('/logout', [AuthController::class, 'logout']);
 
 // OAuth Routes
@@ -108,6 +109,7 @@ $router->get('/admin/users/delete', [AdminController::class, 'deleteUser']);
 $router->post('/admin/reports/generate', [AdminController::class, 'generateReport']);
 $router->get('/admin/reports/user', [AdminController::class, 'userReport']);
 $router->get('/admin/logs', [AdminController::class, 'logs']);
+$router->get('/api/v1/admin/logs', [AdminController::class, 'apiLogs']);
 
 // External Utility / SSRF Endpoint
 $router->get('/api/v1/external/check-price', [ExternalApiController::class, 'checkPrice']);
@@ -120,6 +122,9 @@ $router->get('/api/v1/orders/{id}', [ApiOrderController::class, 'detail']);
 $router->get('/api/v1/users/{id}', [ApiUserController::class, 'detail']);
 $router->put('/api/v1/users/{id}', [ApiUserController::class, 'update']);
 $router->patch('/api/v1/users/{id}', [ApiUserController::class, 'update']);
+
+// Log request in real-time
+\App\Services\LoggerService::logRequest($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
 
 // Dispatch HTTP request
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

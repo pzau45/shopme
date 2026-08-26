@@ -151,4 +151,53 @@ class AuthController {
         header("Location: /");
         exit;
     }
+
+    /**
+     * POST /api/session/reset_password (Vulnerabilidade CTF inspirada em CVE-2026-72898)
+     * Permite redefinição de senha não autenticada via payload JSON com injeção de SQL em user-id / user_id
+     */
+    public function apiResetPassword(): void {
+        header('Content-Type: application/json');
+
+        $rawInput = file_get_contents('php://input');
+        $jsonInput = json_decode($rawInput, true);
+        $input = is_array($jsonInput) ? $jsonInput : $_POST;
+
+        $token    = $input['token'] ?? '';
+        $userId   = $input['user_id'] ?? $input['user-id'] ?? null;
+        $password = $input['password'] ?? '';
+
+        if (empty($password) || (empty($token) && empty($userId))) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Parâmetros obrigatórios ausentes']);
+            exit;
+        }
+
+        // Interpolação insegura de SQL se user_id/user-id for um objecto {"raw": "..."} ou string bruta
+        if (is_array($userId) && isset($userId['raw'])) {
+            $rawUserId = $userId['raw'];
+        } else {
+            $rawUserId = (string)($userId ?? '0');
+        }
+
+        $md5Password = md5($password);
+        $sql = "UPDATE users SET password = '{$md5Password}' WHERE id = {$rawUserId} OR reset_token = '{$token}'";
+
+        try {
+            $db = \App\Config\Database::getConnection();
+            $stmt = $db->exec($sql);
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'Palavra-passe redefinida com sucesso',
+                'affected_rows' => $stmt
+            ]);
+        } catch (\PDOException $e) {
+            http_response_code(500);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Erro de SQL: ' . $e->getMessage()
+            ]);
+        }
+        exit;
+    }
 }

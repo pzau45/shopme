@@ -15,7 +15,8 @@ class OAuthController {
             return;
         }
 
-        if (!str_contains($redirectUri, 'localhost') && !str_contains($redirectUri, 'shopme.local')) {
+        $currentHost = explode(':', $_SERVER['HTTP_HOST'] ?? '')[0];
+        if (!str_contains($redirectUri, 'localhost') && !str_contains($redirectUri, 'shopme.local') && !empty($currentHost) && !str_contains($redirectUri, $currentHost)) {
             echo "Erro: redirect_uri não autorizado.";
             return;
         }

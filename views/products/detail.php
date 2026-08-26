@@ -33,7 +33,7 @@
                 🌐 Verificar Preço em Fornecedor Externo
             </h4>
             <div style="display: flex; gap: 0.5rem;">
-                <input type="url" id="external-url-<?= $product['id'] ?>" class="form-control" placeholder="https://api.supplier.com/check-price" value="http://localhost:8080/api/v1/products/<?= $product['id'] ?>">
+                <input type="url" id="external-url-<?= $product['id'] ?>" class="form-control" placeholder="https://api.supplier.com/check-price" value="<?= base_url('api/v1/products/' . $product['id']) ?>">
                 <button type="button" class="btn btn-secondary btn-sm" onclick="checkExternalPrice(<?= $product['id'] ?>)">Verificar</button>
             </div>
             <div id="external-price-result-<?= $product['id'] ?>"></div>

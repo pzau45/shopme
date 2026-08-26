@@ -24,6 +24,7 @@
 | A12 | Server-Side | IDOR (Order Access) | `GET /orders/{id}` | `src/App/Controllers/OrderController.php` | Aceder a `/orders/1` estando autenticado como cliente 2 |
 | A13 | Server-Side | Broken Access Control | `POST /admin/users/delete`, `GET /admin/logs` | `src/App/Controllers/AdminController.php` | Aceder diretamente sem cookie de sessão admin |
 | A14 | Server-Side | Race Condition (Cupões) | `POST /cart/apply-coupon` | `src/App/Models/Coupon.php` | Requisições concorrentes com cupão `VIP50` |
+| A15 | Server-Side | SQL Injection em Reset Password API (CVE-2026-72898) | `POST /api/session/reset_password` | `src/App/Controllers/AuthController.php` | Body JSON com `{"user-id": {"raw": "1 OR 1=1"}, "password": "newpass"}` |
 | B1 | Client-Side | XSS Refletido | `GET /login?error=` & `GET /products?q=` | `views/auth/login.php`, `views/products/index.php` | `?error=<script>alert('XSS')</script>` |
 | B2 | Client-Side | XSS Armazenado | Avaliações / Tickets / Mensagens | `views/products/detail.php`, `views/support/detail.php` | Submeter comentário com `<script>fetch('/api/v1/users/1').then(...)</script>` |
 | B3 | Client-Side | XSS DOM-based | `GET /?promo=` ou `GET /#ref=` | `public/static/js/main.js` | `http://localhost:8080/#ref=<img src=x onerror=alert(1)>` |
