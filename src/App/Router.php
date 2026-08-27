@@ -41,8 +41,10 @@ class Router {
             $path = rtrim($path, '/');
         }
 
+        $matchMethod = ($method === 'HEAD') ? 'GET' : $method;
+
         foreach ($this->routes as $route) {
-            if ($route['method'] !== $method) {
+            if ($route['method'] !== $matchMethod) {
                 continue;
             }
 

@@ -18,7 +18,7 @@
         <div class="card" style="background: linear-gradient(135deg, #1e1b4b, #311b92); border: 1px solid rgba(99,102,241,0.4);">
             <span style="color: #a5b4fc; font-size: 0.85rem; font-weight: 600;">Saldo Disponível</span>
             <div style="font-size: 2.5rem; font-weight: 800; color: #fff; margin: 0.75rem 0;">
-                €<?= number_format($user['wallet_balance'] ?? 0, 2) ?>
+                <?= format_currency($user['wallet_balance'] ?? 0) ?>
             </div>
             <p style="color: #c7d2fe; font-size: 0.8rem;">
                 Utilize o seu saldo em compras na loja ou transfira fundos entre contas.

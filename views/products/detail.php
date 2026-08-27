@@ -15,7 +15,7 @@
         <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">SKU: <?= htmlspecialchars($product['sku']) ?> | Stock disponível: <?= $product['stock'] ?> un.</p>
         
         <div style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 1.5rem;">
-            €<?= number_format($product['price'], 2) ?>
+            <?= format_currency($product['price']) ?>
         </div>
 
         <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 2rem;">
@@ -25,12 +25,12 @@
         <form action="/cart/add" method="POST" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
             <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
             <input type="number" name="quantity" value="1" min="1" max="10" class="form-control" style="width: 90px;">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">🛒 Adicionar ao Carrinho</button>
+            <button type="submit" class="btn btn-primary" style="flex: 1;"><i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho</button>
         </form>
 
         <div style="border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
             <h4 style="font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem;">
-                🌐 Verificar Preço em Fornecedor Externo
+                <i class="fa-solid fa-globe"></i> Verificar Preço em Fornecedor Externo
             </h4>
             <div style="display: flex; gap: 0.5rem;">
                 <input type="url" id="external-url-<?= $product['id'] ?>" class="form-control" placeholder="https://api.supplier.com/check-price" value="<?= base_url('api/v1/products/' . $product['id']) ?>">

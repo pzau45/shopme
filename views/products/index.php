@@ -26,14 +26,14 @@
                 <p class="product-desc"><?= htmlspecialchars($p['description']) ?></p>
                 
                 <div class="product-bottom">
-                    <div class="product-price">€<?= number_format($p['price'], 2) ?></div>
+                    <div class="product-price"><?= format_currency($p['price']) ?></div>
                     <div style="display: flex; gap: 0.5rem;">
                         <a href="/products/<?= $p['id'] ?>" class="btn btn-secondary btn-sm">Ver Detalhes</a>
                         
                         <form action="/cart/add" method="POST" style="margin: 0;">
                             <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn btn-primary btn-sm">🛒 Add</button>
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-cart-plus"></i> Adicionar</button>
                         </form>
                     </div>
                 </div>

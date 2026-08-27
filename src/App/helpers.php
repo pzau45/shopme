@@ -23,4 +23,40 @@ namespace {
             return $scheme . '://' . $host . '/' . ltrim($path, '/');
         }
     }
+
+    if (!function_exists('get_user_preferences')) {
+        function get_user_preferences(): array {
+            $defaults = [
+                'theme' => 'dark',
+                'currency' => 'EUR',
+                'report_format' => 'pdf'
+            ];
+            if (isset($_COOKIE['shopme_prefs'])) {
+                $raw = base64_decode($_COOKIE['shopme_prefs']);
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    return array_merge($defaults, $decoded);
+                }
+            }
+            return $defaults;
+        }
+    }
+
+    if (!function_exists('format_currency')) {
+        function format_currency($amount): string {
+            $prefs = get_user_preferences();
+            $currency = $prefs['currency'] ?? 'EUR';
+            $num = (float)$amount;
+
+            switch ($currency) {
+                case 'USD':
+                    return '$' . number_format($num * 1.08, 2);
+                case 'GBP':
+                    return '£' . number_format($num * 0.85, 2);
+                case 'EUR':
+                default:
+                    return '€' . number_format($num, 2);
+            }
+        }
+    }
 }
