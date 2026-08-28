@@ -18,18 +18,30 @@ class Database {
             $pass = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'shopme_pass';
             $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: '3306';
 
-            $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
+            $hostsToTry = [$host];
+            // If DB_HOST is 'db' but hostname 'db' cannot be resolved in DNS (e.g. running on VPS host outside Docker), try 127.0.0.1
+            if ($host === 'db' && gethostbyname('db') === 'db') {
+                $hostsToTry[] = '127.0.0.1';
+            }
 
-            try {
-                self::$pdo = new PDO($dsn, $user, $pass, [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => true // Emulated prepares intentionally enable multi-queries in raw sql concatenations
-                ]);
-            } catch (PDOException $e) {
-                // If debug flag is set or detailed error handling, output trace for pentest lab
+            $lastException = null;
+            foreach ($hostsToTry as $currentHost) {
+                $dsn = "mysql:host={$currentHost};port={$port};dbname={$db};charset=utf8mb4";
+                try {
+                    self::$pdo = new PDO($dsn, $user, $pass, [
+                        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES   => true
+                    ]);
+                    return self::$pdo;
+                } catch (PDOException $e) {
+                    $lastException = $e;
+                }
+            }
+
+            if ($lastException !== null) {
                 if (isset($_GET['debug']) || true) {
-                    die("Database Connection Failure: " . $e->getMessage());
+                    die("Database Connection Failure: " . $lastException->getMessage());
                 } else {
                     die("Internal Server Error");
                 }
@@ -46,12 +58,21 @@ class Database {
             $pass = $_ENV['DB_PASS'] ?? getenv('DB_PASS') ?: 'shopme_pass';
             $port = (int)($_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: 3306);
 
-            self::$mysqli = new mysqli($host, $user, $pass, $db, $port);
-
-            if (self::$mysqli->connect_error) {
-                die("MySQLi Connect Error (" . self::$mysqli->connect_errno . ") " . self::$mysqli->connect_error);
+            $hostsToTry = [$host];
+            if ($host === 'db' && gethostbyname('db') === 'db') {
+                $hostsToTry[] = '127.0.0.1';
             }
-            self::$mysqli->set_charset("utf8mb4");
+
+            foreach ($hostsToTry as $currentHost) {
+                $conn = @new mysqli($currentHost, $user, $pass, $db, $port);
+                if (!$conn->connect_error) {
+                    self::$mysqli = $conn;
+                    self::$mysqli->set_charset("utf8mb4");
+                    return self::$mysqli;
+                }
+            }
+
+            die("MySQLi Connect Error: " . mysqli_connect_error());
         }
         return self::$mysqli;
     }
