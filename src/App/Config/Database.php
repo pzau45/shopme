@@ -46,7 +46,8 @@ class Database {
             }
 
             if ($lastException !== null) {
-                if (isset($_GET['debug']) || true) {
+                error_log('Database connection failure: ' . $lastException->getMessage());
+                if (app_debug()) {
                     die("Database Connection Failure: " . $lastException->getMessage());
                 } else {
                     die("Internal Server Error");

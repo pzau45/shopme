@@ -1,0 +1,4 @@
+.env.production
+certs/
+vendor/
+node_modules/

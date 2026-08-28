@@ -1,0 +1,4 @@
+FROM caddy:2-alpine
+
+COPY deploy/Caddyfile /etc/caddy/Caddyfile
+COPY public /var/www/html/public

@@ -1,0 +1,69 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_HOST: db
+      DB_PORT: "3306"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/var/www/html/public/uploads
+      - invoices_data:/var/www/html/storage/invoices
+    networks:
+      - app_net
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.web
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - uploads_data:/var/www/html/public/uploads:ro
+    networks:
+      - app_net
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    networks:
+      - app_net
+
+networks:
+  app_net:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  db_data:
+  invoices_data:
+  uploads_data:

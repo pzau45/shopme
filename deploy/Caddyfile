@@ -1,0 +1,24 @@
+{$APP_DOMAIN} {
+    tls {$TLS_EMAIL}
+
+    root * /var/www/html/public
+    encode zstd gzip
+
+    @sensitive path /.env /backup.sql /.git/* /composer.*
+    respond @sensitive 404
+
+    @uploadedScripts path_regexp uploadedScripts ^/uploads/.*\.(?:php|phtml|phar)$
+    respond @uploadedScripts 404
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        -Server
+    }
+
+    php_fastcgi app:9000
+    file_server
+}

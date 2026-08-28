@@ -1,0 +1,12 @@
+.git
+.agents
+.codex
+vendor
+node_modules
+reports
+certs
+public/.env
+public/backup.sql
+.env.production
+docker-compose.yml
+docker-compose.production.yml

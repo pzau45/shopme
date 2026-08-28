@@ -16,7 +16,7 @@ class User {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             return $user ?: null;
         } catch (\PDOException $e) {
-            if (isset($_GET['debug']) || true) {
+            if (app_debug()) {
                 throw $e;
             }
             return null;

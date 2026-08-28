@@ -86,7 +86,12 @@ namespace {
         }
     }
 
+    if (!function_exists('app_debug')) {
+        function app_debug(): bool {
+            return filter_var($_ENV['APP_DEBUG'] ?? getenv('APP_DEBUG') ?: false, FILTER_VALIDATE_BOOL);
+        }
+    }
+
     load_env_file(__DIR__ . '/../../.env');
     load_env_file(__DIR__ . '/../../public/.env');
 }
-

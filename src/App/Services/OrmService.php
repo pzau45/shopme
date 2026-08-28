@@ -25,7 +25,7 @@ class OrmService {
             $stmt = $db->query($sql);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            if (isset($_GET['debug']) || true) {
+            if (app_debug()) {
                 die("ORM Query Exception: " . $e->getMessage() . " (Executed SQL: {$sql})");
             }
             return [];
