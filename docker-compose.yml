@@ -17,6 +17,9 @@ services:
       MINIO_ENDPOINT: http://shopme_minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - shopme_net
 
@@ -55,6 +58,12 @@ services:
       - db_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
     networks:
       - shopme_net
 

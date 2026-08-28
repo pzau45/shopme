@@ -25,17 +25,23 @@ class Database {
             }
 
             $lastException = null;
-            foreach ($hostsToTry as $currentHost) {
-                $dsn = "mysql:host={$currentHost};port={$port};dbname={$db};charset=utf8mb4";
-                try {
-                    self::$pdo = new PDO($dsn, $user, $pass, [
-                        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                        PDO::ATTR_EMULATE_PREPARES   => true
-                    ]);
-                    return self::$pdo;
-                } catch (PDOException $e) {
-                    $lastException = $e;
+            for ($attempt = 1; $attempt <= 5; $attempt++) {
+                foreach ($hostsToTry as $currentHost) {
+                    $dsn = "mysql:host={$currentHost};port={$port};dbname={$db};charset=utf8mb4";
+                    try {
+                        self::$pdo = new PDO($dsn, $user, $pass, [
+                            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                            PDO::ATTR_EMULATE_PREPARES   => true
+                        ]);
+                        return self::$pdo;
+                    } catch (PDOException $e) {
+                        $lastException = $e;
+                    }
+                }
+
+                if ($attempt < 5) {
+                    usleep(500000);
                 }
             }
 
